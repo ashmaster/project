@@ -5,6 +5,7 @@ import { FirebaseContext } from "../../store/FirebaseContext";
 import "./Post.css";
 import ReactPaginate from "react-paginate";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
 function Posts(props) {
   const { firebase } = useContext(FirebaseContext);
@@ -14,69 +15,138 @@ function Posts(props) {
   const [pageCount, setPageCount] = useState(0);
   const [nextLabel, setNextLabel] = useState("next");
   const [prevLabel, setPrevLabel] = useState("");
+  const dispatch = useDispatch();
+  const redState = useSelector(state => state);
   useEffect(() => {
     firebase
       .firestore()
       .collection("Clothes")
       .get()
       .then((snapshot) => {
-        const allPost = snapshot.docs.map((product) => {
-          if (props.cat === "") {
-            return {
-              ...product.data(),
-              id: product.id,
-            };
-          } else {
-            if (product.data().category === props.cat) {
-              return {
-                ...product.data(),
-                id: product.id,
-              };
-            } else {
-              console.log(props.cat);
-              return {};
-            }
-          }
-        });
-        //serach for keyword in array:
-        const post = allPost.filter(
-          (product) => Object.keys(product).length !== 0
-        );
-        var filteredPost = post;
-        if (props.search !== "") {
-          console.log(props.search);
-          filteredPost = post.filter((product) => {
-            return product.name
-              .toLowerCase()
-              .includes(props.search.toLowerCase());
-          });
+        dispatch({
+          type: "UPDATE_POST",
+          payload: snapshot.docs
+        })
+      })
+  }, [])
+  useEffect(() => {
+    // firebase
+    //   .firestore()
+    //   .collection("Clothes")
+    //   .get()
+    //   .then((snapshot) => {
+    //     const allPost = snapshot.docs.map((product) => {
+    //       if (props.cat === "") {
+    //         return {
+    //           ...product.data(),
+    //           id: product.id,
+    //         };
+    //       } else {
+    //         if (product.data().category === props.cat) {
+    //           return {
+    //             ...product.data(),
+    //             id: product.id,
+    //           };
+    //         } else {
+    //           console.log(props.cat);
+    //           return {};
+    //         }
+    //       }
+    //     });
+    //     //serach for keyword in array:
+    //     const post = allPost.filter(
+    //       (product) => Object.keys(product).length !== 0
+    //     );
+    //     var filteredPost = post;
+    //     if (props.search !== "") {
+    //       console.log(props.search);
+    //       filteredPost = post.filter((product) => {
+    //         return product.name
+    //           .toLowerCase()
+    //           .includes(props.search.toLowerCase());
+    //       });
+    //     }
+
+    //     //filter empty objects in array:
+
+    //     const slice = filteredPost.slice(offset, offset + perPage);
+    //     console.log(slice);
+    //     const postData = slice.map((product) => (
+    //       <div className="card">
+    //         <br />
+    //         <div className="image">
+    //           <img src={product.url} alt="" />
+    //         </div>
+    //         <div className="content">
+    //           <strong>
+    //             <p className="name"> {product.name}</p>
+    //           </strong>
+    //           <span className="kilometer">{product.category}</span>
+    //         </div>
+    //         {/* <div className="date">
+    //     <span>{product.createdAt}</span>
+    //   </div> */}
+    //       </div>
+    //     ));
+    //     setProducts(postData);
+    //     setPageCount(filteredPost.length / perPage);
+    //   });
+    const allPost = redState.posts.map((product) => {
+      if (props.cat === "") {
+        return {
+          ...product.data(),
+          id: product.id,
+        };
+      } else {
+        if (product.data().category === props.cat) {
+          return {
+            ...product.data(),
+            id: product.id,
+          };
+        } else {
+          console.log(props.cat);
+          return {};
         }
-
-        //filter empty objects in array:
-
-        const slice = filteredPost.slice(offset, offset + perPage);
-        console.log(slice);
-        const postData = slice.map((product) => (
-          <div className="card">
-            <br />
-            <div className="image">
-              <img src={product.url} alt="" />
-            </div>
-            <div className="content">
-              <strong>
-                <p className="name"> {product.name}</p>
-              </strong>
-              <span className="kilometer">{product.category}</span>
-            </div>
-            {/* <div className="date">
-        <span>{product.createdAt}</span>
-      </div> */}
-          </div>
-        ));
-        setProducts(postData);
-        setPageCount(filteredPost.length / perPage);
+      }
+    });
+    //serach for keyword in array:
+    const post = allPost.filter(
+      (product) => Object.keys(product).length !== 0
+    );
+    var filteredPost = post;
+    if (props.search !== "") {
+      console.log(props.search);
+      filteredPost = post.filter((product) => {
+        return product.name
+          .toLowerCase()
+          .includes(props.search.toLowerCase());
       });
-  }, [props.cat, offset, props.search]);
+    }
+
+    //filter empty objects in array:
+
+    const slice = filteredPost.slice(offset, offset + perPage);
+    console.log(slice);
+    const postData = slice.map((product) => (
+      <div className="card">
+        <br />
+        <div className="image">
+          <img src={product.url} alt="" />
+        </div>
+        <div className="content">
+          <strong>
+            <p className="name"> {product.name}</p>
+          </strong>
+          <span className="kilometer">{product.category}</span>
+        </div>
+        {/* <div className="date">
+    <span>{product.createdAt}</span>
+  </div> */}
+      </div>
+    ));
+    setProducts(postData);
+    setPageCount(filteredPost.length / perPage);
+  }, [props.cat, offset, props.search, redState.posts]);
 
   useEffect(() => {
     setOffset(0);

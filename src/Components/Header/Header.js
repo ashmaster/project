@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { useContext, useRef } from 'react';
 import { useHistory } from 'react-router-dom'
 
 import Select from 'react-select';
@@ -28,8 +28,8 @@ function Header(props) {
 
 
   const history = useHistory()
+  const { user } = useContext(AuthContext)
   const redState = useSelector(state => state);
-  const {user} = redState
   const { firebase } = useContext(FirebaseContext)
   const dataCat = getParameter('dataCat')
   const dataSearch = getParameter('dataSearch')
@@ -55,10 +55,7 @@ function Header(props) {
 
     props.useSearch('')
   }
-
-  useEffect(() => {
-    console.log(user)
-  },[])
+  
   // detect enter key press:
   const handleKeypress = (e) => {
     if (e.key === 'Enter') {
